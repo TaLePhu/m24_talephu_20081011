@@ -1,12 +1,15 @@
 import { StyleSheet, Text, View,TextInput, TouchableOpacity, ScrollView, FlatList } from 'react-native'
 import React, { useState } from 'react'
 import {useSelector, useDispatch} from 'react-redux'
+import { deleteUser } from '../redux/reducer';
 
 export default function Screen1() {
     const [email, setEmail]  = useState();
     const [pass, setPass] = useState();
+
     const state = useSelector((state) => state.user)
     const dispatch = useDispatch();
+
     const [dataList, setData] = useState([])
     const APIurl = `https://6555d54484b36e3a431e6fc2.mockapi.io/apick1`
 
@@ -33,7 +36,8 @@ export default function Screen1() {
       const viewList=async()=>{
         fetchData();
       }
-  //role state
+  
+        //role state
     const renderTodo = (todos) => {
       return todos.map((todo, index) => (
         <View key={index}>
@@ -43,6 +47,27 @@ export default function Screen1() {
         </View>
       ));
     };
+
+    //delete
+  const deletee=async(id) => {
+    dispatch(deleteUser(id))
+    try{
+      const APIurl=`https://6555d54484b36e3a431e6fc2.mockapi.io/apick1/${id}`
+      const response= await fetch(APIurl, {
+        method: 'DELETE',
+        headers:{
+          'Content-Type':'application/json'
+        },
+      })
+      if(!response.ok){
+        throw new Error('delete fail')
+      }
+      const data = await response.json();
+      setData(data)
+    }catch(error){
+      throw new Error("Error", error)
+    }
+  }
 
 
   return (
@@ -77,12 +102,22 @@ export default function Screen1() {
           <FlatList
             data={state}
             renderItem={({item})=>(
+              <View style={{flexDirection: 'row'}}>
               <View>
                 <Text>ID:{item.id}</Text>
                 <Text>email{item.email}</Text>
                 <Text>password{item.password}</Text>
                 {renderTodo(item.todo)}
               </View>
+              <View>
+                  <TouchableOpacity style={styles.btn}
+                    onPress={()=>deletee(item.id)}
+                  >
+                    <Text style={styles.txtBtn}>DELETE</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              
             )}
           />
         </ScrollView>
@@ -110,7 +145,9 @@ export default function Screen1() {
                   {renderTodo(item.todos)}
                 </View>
                 <View>
-                  <TouchableOpacity style={styles.btn}>
+                  <TouchableOpacity style={styles.btn}
+                    onPress={()=>deletee(item.id)}
+                  >
                     <Text style={styles.txtBtn}>DELETE</Text>
                   </TouchableOpacity>
                 </View>
